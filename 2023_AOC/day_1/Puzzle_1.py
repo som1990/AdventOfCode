@@ -1,5 +1,4 @@
-"""Puzzle 1
-
+"""Puzzle_1
 Author: soumitra.goswami@gmail.com
 Description:
     The newly-improved calibration document consists of lines of text; each line originally contained a 
@@ -28,7 +27,7 @@ import typing as t
 import re
 from pathlib import Path
 
-FLAGS = re.VERBOSE | re.DOTALL
+FLAGS = re.VERBOSE | re.DOTALL | re.MULTILINE
 
 numbers = {
     "zero": 0,
@@ -44,8 +43,7 @@ numbers = {
 }
 
 # regex to find first instance of the digit
-DIGIT = re.compile(r"(?:\d|zero|one|two|three|four|five|six|seven|eight|nine)")
-DIGIT_REVERSE = re.compile(r"(?:\d|orez|eno|owt|eerht|ruof|evif|xis|neves|thgie|enin)")
+DIGIT = re.compile(r"(?=(one|two|three|four|five|six|seven|eight|nine|\d))", FLAGS)
 
 
 def to_int(idx: str) -> int:
@@ -58,28 +56,14 @@ def to_int(idx: str) -> int:
         return int(idx)
 
 
-def decode_line(line: str) -> int:
-    """Algorithm:
-    1) Find the first instance of a digit left to right
-    2) Then find the first instance of a digit from right to left.
-
-    Avoids the situation where the last two isn't detected in the following line:
-    "four2threen2mpcqmfourrspvlbeightwobb"
-    Correct Answer in this case: 42.
-    With a regex match from just searching left to right : 48
+def decode_line2(line: str) -> int:
     """
-
-    # 1) First Digit right to left
-    first = DIGIT.search(line).group()
+    Matches the regex pattern and finds the required numbers
+    """
     val = -1
-    # Reverse the line to search right to left
-    line_reverse = line[::-1]
-    # 2) Search Right to left to find the last Digit
-    last = DIGIT_REVERSE.search(line_reverse).group()
-    # Reverse the answer
-    last = last[::-1]
-    # Construct the 2 digit value
-    val = to_int(first) * 10 + to_int(last)
+    digits = DIGIT.findall(line)
+    if len(digits) > 0:
+        val = to_int(digits[0]) * 10 + to_int(digits[-1])
     return val
 
 
@@ -93,7 +77,7 @@ def decode_file(fp: str) -> int:
 
     cummulative_sum = 0
     for i, line in enumerate(lines):
-        val = decode_line(line)
+        val = decode_line2(line)
         if val < 0:
             raise ValueError(f"Incorrect value in line {i}")
 
@@ -107,7 +91,7 @@ def decode_file(fp: str) -> int:
 if __name__ == "__main__":
     dirpath = Path(__file__).parent
     filepath = Path(dirpath, "test.txt")
-    filepath = Path(dirpath, "Inputcode.txt")
+    filepath = Path(dirpath, "InputCode.txt")
 
     my_sum = decode_file(filepath)
     print(f"FINAL SUM: {my_sum}")
